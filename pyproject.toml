@@ -1,0 +1,6 @@
+# Tool settings live in .dev-config/; this file only points Ruff and Pyright at them.
+[tool.ruff]
+extend = ".dev-config/ruff.toml"
+
+[tool.pyright]
+extends = ".dev-config/pyrightconfig.json"

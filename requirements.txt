@@ -1,5 +1,5 @@
 pyyaml
-dotenv
+python-dotenv
 pillow
 -r LLMAnthropic/requirements.txt
 -r LLMAzureOpenAI/requirements.txt
