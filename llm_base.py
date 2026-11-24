@@ -251,6 +251,9 @@ def resolve_config_value(
         return _resolve_env_reference(config.get(reference_key), reference_key)
 
     value = config.get(key, default)
+    # "None" in YAML is a string, and a truthy one: without this, BASE_URL: "None" is used as a URL.
+    if _is_empty_config_value(value):
+        return default
     if isinstance(value, str) and value.startswith("${") and value.endswith("}"):
         return _resolve_env_reference(value[2:-1], key)
     if isinstance(value, str) and allow_bare_env and _looks_like_env_name(value):

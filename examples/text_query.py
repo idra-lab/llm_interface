@@ -15,7 +15,7 @@ sys.path.insert(0, str(ROOT))
 
 from llm_factory import create_llm  # noqa: E402
 
-CONFIG_FILE = ROOT / "conf" / "azure_gpt52.yaml"
+CONFIG_FILE = ROOT / "conf" / "claude-45-haiku.yaml"
 QUESTION = "Explain in three sentences what a large language model is."
 
 
