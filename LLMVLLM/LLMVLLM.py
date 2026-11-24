@@ -12,8 +12,6 @@ import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
-import yaml
-
 try:
     from huggingface_hub import snapshot_download
 except Exception:
@@ -641,11 +639,6 @@ class LLMVLLM(BaseLLM):
                 return
             refs = int(cache_entry.get("refs", 0))
             cache_entry["refs"] = max(0, refs - 1)
-
-
-def _load_yaml_config(config_file: str) -> Dict[str, Any]:
-    with open(config_file, "r") as file:
-        return yaml.safe_load(file) or {}
 
 
 def _resolve_optional_path(path_value: Any, base_dir: str) -> Optional[str]:

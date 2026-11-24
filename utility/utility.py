@@ -4,8 +4,10 @@ import logging
 import os
 import re
 import sys
+from datetime import datetime
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
+from typing import Any, Mapping, Union
 
 try:
     from loguru import logger as _loguru_logger
@@ -20,7 +22,7 @@ RED = "\033[91m"
 FILE_NAME_WIDTH = 30
 
 
-def bold(text):
+def bold(text: str) -> str:
     """Return text wrapped in ANSI bold escape codes.
 
     Parameters
@@ -36,7 +38,7 @@ def bold(text):
     return f"{BOLD}{text}{RESET}"
 
 
-def italic(text):
+def italic(text: str) -> str:
     """Return text wrapped in ANSI italic escape codes.
 
     Parameters
@@ -64,18 +66,18 @@ ANGULAR_BRACKETS_PATTERN = re.compile(r"\<.*?\>", re.DOTALL)
 CURLY_BRACKETS_PATTERN = re.compile(r"\{.*?\}", re.DOTALL)
 
 
-def _short_level_name(level_name):
+def _short_level_name(level_name: str) -> str:
     short_name = LEVEL_NAME_MAP.get(level_name, level_name)
     if short_name in {"ERR", "CRT"}:
         return f"{RED}{short_name}{RESET}"
     return short_name
 
 
-def _format_time(record_time):
+def _format_time(record_time: datetime) -> str:
     return record_time.strftime("%Y-%m-%d %H:%M:%S,%f")[:-3]
 
 
-def _escape_braces(text):
+def _escape_braces(text: str) -> str:
     # Escape braces for Loguru formatting and angle brackets for markup safety.
 
     match = ANGULAR_BRACKETS_PATTERN.search(text)
@@ -89,13 +91,13 @@ def _escape_braces(text):
     return text
 
 
-def _format_console(record):
+def _format_console(record: Mapping[str, Any]) -> str:
     level = _short_level_name(record["level"].name)
     message = _escape_braces(record["message"])
     return f"[{BOLD}{level}{RESET}] {message}\n"
 
 
-def _format_file(record):
+def _format_file(record: Mapping[str, Any]) -> str:
     time_str = _format_time(record["time"])
     level = _short_level_name(record["level"].name)
     message = _escape_braces(record["message"])
@@ -106,7 +108,7 @@ def _format_file(record):
 class ShortLevelFormatter(logging.Formatter):
     """Formatter that replaces standard log levels with compact names."""
 
-    def format(self, record):
+    def format(self, record: logging.LogRecord) -> str:
         """Format a log record with a shortened level name.
 
         Parameters
@@ -130,7 +132,7 @@ class ShortLevelFormatter(logging.Formatter):
 class Logger(logging.Logger):
     """Logger with compact level names and optional Loguru support."""
 
-    def __init__(self, name, output_dir=".", output_file_name="log.log"):
+    def __init__(self, name: str, output_dir: str = ".", output_file_name: str = "log.log") -> None:
         """Initialize the logger.
 
         Parameters
@@ -151,7 +153,7 @@ class Logger(logging.Logger):
         self._loguru_sinks = []
         super().setLevel(logging.DEBUG)
 
-        if self._use_loguru:
+        if _loguru_logger is not None:
             self._loguru = _loguru_logger.bind(logger_name=name)
             self._configure_loguru()
         else:
@@ -175,7 +177,7 @@ class Logger(logging.Logger):
             self.addHandler(self.c_handler)
             self.addHandler(self.f_handler)
 
-    def _configure_loguru(self):
+    def _configure_loguru(self) -> None:
         """Configure Loguru sinks for console and rotating-file output."""
         # Remove default and previously-added sinks to enforce our formatting.
         self._loguru.remove()
@@ -204,7 +206,16 @@ class Logger(logging.Logger):
             )
         )
 
-    def _log(self, level, msg, args, exc_info=None, extra=None, stack_info=False, stacklevel=1):
+    def _log(
+        self,
+        level: int,
+        msg: object,
+        args: Any,
+        exc_info: Any = None,
+        extra: Union[Mapping[str, object], None] = None,
+        stack_info: bool = False,
+        stacklevel: int = 1,
+    ) -> None:
         """Log a message through Loguru when available, otherwise stdlib logging.
 
         Parameters
@@ -227,7 +238,7 @@ class Logger(logging.Logger):
         if self._use_loguru:
             level_name = logging.getLevelName(level)
             if args:
-                msg = msg % args
+                msg = str(msg) % args
                 args = ()
             depth = 2 + max(stacklevel - 1, 0)
             self._loguru.opt(depth=depth, exception=exc_info).log(level_name, msg, *args)
@@ -242,7 +253,7 @@ class Logger(logging.Logger):
             stacklevel=stacklevel,
         )
 
-    def setLevel(self, level):
+    def setLevel(self, level: Union[int, str]) -> None:
         """Set the logger level and update handlers.
 
         Parameters
@@ -257,27 +268,27 @@ class Logger(logging.Logger):
             for handler in self.handlers:
                 handler.setLevel(level)
 
-    def set_debug(self):
+    def set_debug(self) -> None:
         """Set the logger to debug mode."""
         self.setLevel(logging.DEBUG)
 
-    def set_info(self):
+    def set_info(self) -> None:
         """Set the logger to info mode."""
         self.setLevel(logging.INFO)
 
-    def set_warning(self):
+    def set_warning(self) -> None:
         """Set the logger to warning mode."""
         self.setLevel(logging.WARNING)
 
-    def set_error(self):
+    def set_error(self) -> None:
         """Set the logger to error mode."""
         self.setLevel(logging.ERROR)
 
-    def set_critical(self):
+    def set_critical(self) -> None:
         """Set the logger to critical mode."""
         self.setLevel(logging.CRITICAL)
 
-    def change_output_dir_file(self, output_dir, output_file):
+    def change_output_dir_file(self, output_dir: str, output_file: str) -> None:
         """Change the rotating log file location.
 
         Parameters

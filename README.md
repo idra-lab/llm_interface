@@ -69,8 +69,8 @@ none at all:
 ```python
 from llm_base import configure_env
 
-configure_env("other.env")     # read other.env instead
-configure_env(load=False)      # use the shell environment only
+configure_env("other.env")  # read other.env instead
+configure_env(load=False)  # use the shell environment only
 ```
 
 The YAML files never hold secrets. They name the environment variable to read, through
@@ -85,7 +85,7 @@ llm = create_llm("conf/gpt52.yaml")
 ok, answer = llm.query("Summarise the plot of Hamlet in one sentence.")
 if ok:
     print(answer)
-    print(llm.last_usage)   # {'prompt_tokens': ..., 'completion_tokens': ...}
+    print(llm.last_usage)  # {'prompt_tokens': ..., 'completion_tokens': ...}
 ```
 
 With images (PIL images or file paths), on a backend that supports them:
@@ -106,7 +106,7 @@ Pick a config interactively from `conf/`, or by index or file name:
 ```python
 from llm_factory import select_llm
 
-llm = select_llm()                           # prints a numbered menu
+llm = select_llm()  # prints a numbered menu
 llm = select_llm(selection="glm4_7.yaml")
 ```
 

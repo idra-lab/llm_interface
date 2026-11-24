@@ -137,7 +137,8 @@ class LLMAzureOpenAIResponses(LLMAzureOpenAI):
     def build_content(
         self,
         message: str,
-        images: Optional[Sequence[ImageInput]] = None,
+        # Quoted like in LLMGemini: the try/except imports declare ImageInput more than once.
+        images: Optional[Sequence["ImageInput"]] = None,
     ) -> Any:
         """Build the content of a single message, using Responses content parts.
 
@@ -162,7 +163,7 @@ class LLMAzureOpenAIResponses(LLMAzureOpenAI):
         parts.extend(self.image_part(image) for image in images)
         return parts
 
-    def image_part(self, image: ImageInput) -> Dict[str, Any]:
+    def image_part(self, image: "ImageInput") -> Dict[str, Any]:
         """Encode an image as a Responses ``input_image`` content part.
 
         Parameters
