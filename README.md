@@ -22,6 +22,8 @@ from the file, so switching model means switching file, not code.
 
 - [Repository layout](#repository-layout)
 - [Installation](#installation)
+  - [Linux](#linux)
+  - [macOS](#macos)
   - [Windows](#windows)
 - [Credentials](#credentials)
 - [Quick start](#quick-start)
@@ -77,39 +79,26 @@ Logging goes through `utility/logger.py`. It writes to the console and to a rota
 file. It uses [loguru](https://github.com/Delgan/loguru) when installed (`pip install loguru`),
 and the standard `logging` module otherwise.
 
-### Windows
+### Linux
 
-On Windows, run the project inside [WSL 2](https://learn.microsoft.com/windows/wsl/install)
-(Windows Subsystem for Linux). Every backend works there, vLLM included, and all the Linux
-commands in this README apply unchanged.
+Every backend works on Linux, vLLM included. The commands below are for Ubuntu and Debian; on
+Fedora, replace the `apt` line with `sudo dnf install -y python3 python3-pip git make`.
 
-1. Install WSL with Ubuntu. Open PowerShell **as administrator**, run the command below, and
-   restart Windows when it asks:
-
-   ```powershell
-   wsl --install -d Ubuntu
-   ```
-
-   Open *Ubuntu* from the Start menu and choose a Linux user name and password. Every command
-   from here on runs in that Ubuntu terminal.
-
-2. Install Python and Git:
+1. Install Python 3.10 or later and Git:
 
    ```bash
    sudo apt update
    sudo apt install -y python3 python3-venv python3-pip git make
    ```
 
-3. Clone the repository into the Linux home folder. Code under `/mnt/c/...` also works, but file
-   access there is much slower:
+2. Clone the repository:
 
    ```bash
-   cd ~
    git clone https://github.com/idra-lab/llm_interface.git
    cd llm_interface
    ```
 
-4. Create a virtual environment, install the requirements and create the credentials file:
+3. Create a virtual environment, install the requirements and create the credentials file:
 
    ```bash
    python3 -m venv .venv
@@ -119,14 +108,74 @@ commands in this README apply unchanged.
    cp .env.example .env
    ```
 
+Notes for Linux:
+
+- **GPU:** the PyTorch wheels on PyPI already include CUDA. You only need the NVIDIA driver;
+  run `nvidia-smi` to check that the GPU is visible.
+- **Model folder:** some Hugging Face and vLLM configurations in `conf/` download weights to
+  `/scratch/models`. Create it (`sudo mkdir -p /scratch/models && sudo chown $USER /scratch/models`)
+  or change `CACHE_DIR` / `DOWNLOAD_DIR` to a folder of your own.
+
+### macOS
+
+The API backends and the Hugging Face backend work on macOS. vLLM does not:
+`LLMVLLM/requirements.txt` installs nothing there.
+
+1. Install [Homebrew](https://brew.sh/), then Python and Git:
+
+   ```bash
+   brew install python@3.12 git
+   ```
+
+2. Clone the repository:
+
+   ```bash
+   git clone https://github.com/idra-lab/llm_interface.git
+   cd llm_interface
+   ```
+
+3. Create a virtual environment, install the requirements and create the credentials file:
+
+   ```bash
+   python3.12 -m venv .venv
+   source .venv/bin/activate
+   pip install -r requirements.txt
+   cp .env.example .env
+   ```
+
+Notes for macOS:
+
+- **Hugging Face models:** the configurations in `conf/` set `DEVICE: "cuda"`, which a Mac does
+  not have. Set `DEVICE: "mps"` to use the GPU of an Apple Silicon Mac, or `"cpu"`.
+- **Quantization:** `bitsandbytes` has no macOS build and is skipped, so `QUANTIZE` has no
+  effect and models load at full size. Large models may not fit in memory.
+- **Model folder:** `/scratch/models` cannot be created on macOS without extra steps. Delete the
+  `CACHE_DIR` line from the Hugging Face configuration to download into the repository's
+  `models/` folder, or set a full path such as `/Users/<you>/models` (`~` is not expanded).
+
+### Windows
+
+On Windows, run the project inside [WSL 2](https://learn.microsoft.com/windows/wsl/install)
+(Windows Subsystem for Linux). Every backend works there, vLLM included.
+
+1. Install WSL with Ubuntu. Open PowerShell **as administrator**, run the command below, and
+   restart Windows when it asks:
+
+   ```powershell
+   wsl --install -d Ubuntu
+   ```
+
+2. Open *Ubuntu* from the Start menu and choose a Linux user name and password.
+
+3. In that Ubuntu terminal, follow the [Linux](#linux) steps above. Clone the repository into the
+   Linux home folder (`cd ~` first): code under `/mnt/c/...` also works, but file access there is
+   much slower.
+
 Notes for WSL:
 
 - **GPU:** install the normal NVIDIA driver on Windows only. WSL passes the GPU through, so do
   not install a Linux NVIDIA driver inside Ubuntu. Run `nvidia-smi` in Ubuntu to check that the
   GPU is visible.
-- **Model folder:** some Hugging Face and vLLM configurations in `conf/` download weights to
-  `/scratch/models`. Create it (`sudo mkdir -p /scratch/models && sudo chown $USER /scratch/models`)
-  or change `CACHE_DIR` / `DOWNLOAD_DIR` to a folder of your own.
 - **Windows files:** your Windows drives are under `/mnt/c`, `/mnt/d`, and so on. From Windows,
   open the Linux files by typing `\\wsl$\Ubuntu` in the Explorer address bar.
 
