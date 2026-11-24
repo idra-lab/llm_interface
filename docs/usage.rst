@@ -12,17 +12,9 @@ Installation
 Each backend folder has its own ``requirements.txt``, so you can install only the providers you
 use.
 
-:mod:`llm_base` imports its logger from ``utility.logger``. It searches for a
-``utility/logger.py`` in its own folder and up to seven parent folders. When you use this
-repository on its own, add one that defines a standard :class:`logging.Logger` named ``logger``:
-
-.. code-block:: python
-
-   # utility/logger.py
-   import logging
-
-   logging.basicConfig(level=logging.INFO)
-   logger = logging.getLogger("llm_interface")
+Logging goes through ``utility/logger.py``. It writes to the console and to a rotating
+``log.log`` file. It uses `loguru <https://github.com/Delgan/loguru>`_ when installed, and the
+standard :mod:`logging` module otherwise.
 
 Credentials
 -----------

@@ -1,6 +1,7 @@
 pyyaml
 python-dotenv
 pillow
+loguru
 -r LLMAnthropic/requirements.txt
 -r LLMAzureOpenAI/requirements.txt
 -r LLMGemini/requirements.txt

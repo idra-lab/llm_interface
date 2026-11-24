@@ -62,7 +62,8 @@ LEVEL_NAME_MAP = {
     "CRITICAL": "CRT",
 }
 
-ANGULAR_BRACKETS_PATTERN = re.compile(r"\<.*?\>", re.DOTALL)
+# Same shape as the tags Loguru parses (loguru/_colorizer.py); only these need escaping.
+ANGULAR_BRACKETS_PATTERN = re.compile(r"</?(?:[fb]g\s)?[^<>\s]*>")
 CURLY_BRACKETS_PATTERN = re.compile(r"\{.*?\}", re.DOTALL)
 
 
@@ -80,9 +81,8 @@ def _format_time(record_time: datetime) -> str:
 def _escape_braces(text: str) -> str:
     # Escape braces for Loguru formatting and angle brackets for markup safety.
 
-    match = ANGULAR_BRACKETS_PATTERN.search(text)
-    if match:
-        text = text.replace("<", "\\<").replace(">", "\\>")
+    # A backslash before anything that is not a tag would be printed as-is.
+    text = ANGULAR_BRACKETS_PATTERN.sub(lambda match: "\\" + match.group(0), text)
 
     match = CURLY_BRACKETS_PATTERN.search(text)
     if match:
@@ -101,7 +101,8 @@ def _format_file(record: Mapping[str, Any]) -> str:
     time_str = _format_time(record["time"])
     level = _short_level_name(record["level"].name)
     message = _escape_braces(record["message"])
-    file_name = f"{record['file'].name:<{FILE_NAME_WIDTH}}"
+    # Placeholder names like "<string>" (python -c, REPL, notebooks) would read as color tags.
+    file_name = _escape_braces(f"{record['file'].name:<{FILE_NAME_WIDTH}}")
     return f"{time_str} {ITALIC}{file_name}{RESET} [{BOLD}{level}{RESET}] {message}\n"
 
 

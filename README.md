@@ -1,8 +1,35 @@
 # LLM Interface
 
+[![Python](https://img.shields.io/badge/python-3.10%2B-blue?logo=python&logoColor=white)](https://www.python.org/)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+[![Pyright](https://img.shields.io/badge/types-pyright-informational)](https://github.com/microsoft/pyright)
+[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit)](https://github.com/pre-commit/pre-commit)
+[![Docs](https://github.com/idra-lab/llm_interface/actions/workflows/docs.yml/badge.svg)](https://idra-lab.github.io/llm_interface/)
+
+[![OpenAI](https://img.shields.io/badge/OpenAI-412991?logo=openai&logoColor=white)](https://platform.openai.com/)
+[![Azure OpenAI](https://img.shields.io/badge/Azure%20OpenAI-0078D4?logo=microsoftazure&logoColor=white)](https://azure.microsoft.com/products/ai-services/openai-service)
+[![Anthropic](https://img.shields.io/badge/Anthropic-191919?logo=anthropic&logoColor=white)](https://www.anthropic.com/)
+[![Gemini](https://img.shields.io/badge/Google%20Gemini-8E75B2?logo=googlegemini&logoColor=white)](https://ai.google.dev/)
+[![GLM](https://img.shields.io/badge/GLM-1F6FEB)](https://open.bigmodel.cn/)
+[![Hugging Face](https://img.shields.io/badge/Hugging%20Face-FFD21E?logo=huggingface&logoColor=black)](https://huggingface.co/)
+[![vLLM](https://img.shields.io/badge/vLLM-30A2FF)](https://github.com/vllm-project/vllm)
+
 A single Python interface to several LLM providers. Each model is described by one YAML file.
 You load the file and call `query()`. The backend, connection and request parameters all come
 from the file, so switching model means switching file, not code.
+
+## Contents
+
+- [Repository layout](#repository-layout)
+- [Installation](#installation)
+- [Credentials](#credentials)
+- [Quick start](#quick-start)
+- [Configuration files](#configuration-files)
+  - [Provider selection](#provider-selection)
+  - [Backend-specific keys](#backend-specific-keys)
+- [Adding a backend](#adding-a-backend)
+- [Documentation](#documentation)
+- [Known limitations](#known-limitations)
 
 Supported backends:
 
@@ -26,6 +53,7 @@ LLM<Provider>/     one folder per backend, each with its own requirements.txt
 conf/              ready-made YAML configurations, one per model
 models/            local model weights (ignored by git)
 docs/              Sphinx documentation
+utility/           shared logger
 .env.example       template for the credentials file
 ```
 
@@ -42,17 +70,9 @@ Each backend folder has its own `requirements.txt`, so you can install only the 
 pip install pyyaml python-dotenv pillow -r LLMOpenAI/requirements.txt
 ```
 
-`llm_base.py` imports its logger from `utility.logger`. It searches for a `utility/logger.py`
-in this folder and up to seven parent folders. When you use this repository on its own, add a
-`utility/logger.py` that defines a standard `logging.Logger` named `logger`:
-
-```python
-# utility/logger.py
-import logging
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("llm_interface")
-```
+Logging goes through `utility/logger.py`. It writes to the console and to a rotating `log.log`
+file. It uses [loguru](https://github.com/Delgan/loguru) when installed (`pip install loguru`),
+and the standard `logging` module otherwise.
 
 ## Credentials
 
@@ -196,7 +216,10 @@ See `conf/` for a working example of each.
 
 ## Documentation
 
-The full documentation, including the API reference, is built with Sphinx:
+The full documentation, including the API reference, is published at
+<https://idra-lab.github.io/llm_interface/>. It is rebuilt on every push to `main`.
+
+To build it locally:
 
 ```bash
 pip install -r docs/requirements.txt
@@ -208,4 +231,3 @@ make -C docs html
 
 - `BaseLLM.prepare()` (few-shot examples from a folder) is not implemented yet and raises
   `NotImplementedError`.
-- `utility/logger.py` is not part of this repository (see Installation).
