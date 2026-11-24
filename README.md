@@ -22,8 +22,10 @@ from the file, so switching model means switching file, not code.
 
 - [Repository layout](#repository-layout)
 - [Installation](#installation)
+  - [Windows](#windows)
 - [Credentials](#credentials)
 - [Quick start](#quick-start)
+- [Examples](#examples)
 - [Configuration files](#configuration-files)
   - [Provider selection](#provider-selection)
   - [Backend-specific keys](#backend-specific-keys)
@@ -53,6 +55,7 @@ LLM<Provider>/     one folder per backend, each with its own requirements.txt
 conf/              ready-made YAML configurations, one per model
 models/            local model weights (ignored by git)
 docs/              Sphinx documentation
+examples/          runnable text and image examples
 utility/           shared logger
 .env.example       template for the credentials file
 ```
@@ -73,6 +76,59 @@ pip install pyyaml python-dotenv pillow -r LLMOpenAI/requirements.txt
 Logging goes through `utility/logger.py`. It writes to the console and to a rotating `log.log`
 file. It uses [loguru](https://github.com/Delgan/loguru) when installed (`pip install loguru`),
 and the standard `logging` module otherwise.
+
+### Windows
+
+On Windows, run the project inside [WSL 2](https://learn.microsoft.com/windows/wsl/install)
+(Windows Subsystem for Linux). Every backend works there, vLLM included, and all the Linux
+commands in this README apply unchanged.
+
+1. Install WSL with Ubuntu. Open PowerShell **as administrator**, run the command below, and
+   restart Windows when it asks:
+
+   ```powershell
+   wsl --install -d Ubuntu
+   ```
+
+   Open *Ubuntu* from the Start menu and choose a Linux user name and password. Every command
+   from here on runs in that Ubuntu terminal.
+
+2. Install Python and Git:
+
+   ```bash
+   sudo apt update
+   sudo apt install -y python3 python3-venv python3-pip git make
+   ```
+
+3. Clone the repository into the Linux home folder. Code under `/mnt/c/...` also works, but file
+   access there is much slower:
+
+   ```bash
+   cd ~
+   git clone https://github.com/idra-lab/llm_interface.git
+   cd llm_interface
+   ```
+
+4. Create a virtual environment, install the requirements and create the credentials file:
+
+   ```bash
+   python3 -m venv .venv
+   source .venv/bin/activate
+   pip install -r requirements.txt
+   pip install -r LLMVLLM/requirements.txt    # optional
+   cp .env.example .env
+   ```
+
+Notes for WSL:
+
+- **GPU:** install the normal NVIDIA driver on Windows only. WSL passes the GPU through, so do
+  not install a Linux NVIDIA driver inside Ubuntu. Run `nvidia-smi` in Ubuntu to check that the
+  GPU is visible.
+- **Model folder:** some Hugging Face and vLLM configurations in `conf/` download weights to
+  `/scratch/models`. Create it (`sudo mkdir -p /scratch/models && sudo chown $USER /scratch/models`)
+  or change `CACHE_DIR` / `DOWNLOAD_DIR` to a folder of your own.
+- **Windows files:** your Windows drives are under `/mnt/c`, `/mnt/d`, and so on. From Windows,
+  open the Linux files by typing `\\wsl$\Ubuntu` in the Explorer address bar.
 
 ## Credentials
 
@@ -138,6 +194,23 @@ llm = create_llm("conf/gpt52.yaml", model="gpt-5.4", params={"seed": 7})
 
 `query()` returns `(success, answer)`. It retries up to `max_retry` times (default 3) and
 returns `(False, "")` when every attempt fails. It does not raise on provider errors.
+
+## Examples
+
+The `examples/` folder holds two runnable scripts. Both use `conf/azure_gpt52.yaml`, so they need
+`AZURE_OPENAI_API_KEY` and `AZURE_OPENAI_ENDPOINT` in `.env`.
+
+| Script | What it does |
+|--------|--------------|
+| [`examples/text_query.py`](examples/text_query.py) | Sends a text-only question and prints the answer and token usage. |
+| [`examples/image_query.py`](examples/image_query.py) | Downloads Hokusai's *The Great Wave off Kanagawa* (public domain, Wikimedia Commons) and asks the model to describe it. |
+
+```bash
+python examples/text_query.py
+python examples/image_query.py
+```
+
+To try another model, change `CONFIG_FILE` at the top of the script.
 
 ## Configuration files
 

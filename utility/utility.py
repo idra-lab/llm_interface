@@ -316,4 +316,4 @@ class Logger(logging.Logger):
             self.addHandler(self.f_handler)
 
 
-logger = Logger(str(Path(__file__).parent).split("/")[-1])
+logger = Logger(Path(__file__).parent.name)
