@@ -74,7 +74,7 @@ ImageInput = Union["Any", str, Path]
 
 
 # Environment file the LLM layer reads, as set by :func:`configure_env`. ``None`` means
-# "not configured", so the project root's ``.env`` is used.
+# "not configured", so the ``.env`` next to this module is used.
 _ENV_PATH: Optional[str] = None
 
 # Set by :func:`configure_env` when an entry point asks for no file to be read at all.
@@ -93,7 +93,7 @@ def configure_env(env_path: Optional[Union[str, Path]] = None, load: bool = True
     Parameters
     ----------
     env_path : str or Path, optional
-        File to read. ``None`` restores the default, the project root's ``.env``.
+        File to read. ``None`` restores the default, the ``.env`` next to this module.
     load : bool, optional
         When False, no environment file is read at all and ``env_path`` is ignored.
     """
@@ -109,21 +109,18 @@ def configure_env(env_path: Optional[Union[str, Path]] = None, load: bool = True
 def default_env_path() -> str:
     """Return the environment file path the LLM layer reads.
 
-    Whatever :func:`configure_env` was given, or else the project root's ``.env``: ``LLM/``
-    sits one directory below the root, so this resolves to the same file ``samgpt.py``
-    loads. One file rather than two means credentials cannot end up duplicated across them,
-    or worse, disagreeing about which endpoint a key belongs to.
+    Whatever :func:`configure_env` was given, or else the ``.env`` in the directory
+    containing this module.
 
     Returns
     -------
     str
         Path of the configured file, or of the ``.env`` in the directory containing this
-        module's package.
+        module.
     """
     if _ENV_PATH is not None:
         return _ENV_PATH
-    package_dir = os.path.dirname(os.path.abspath(__file__))
-    return os.path.join(os.path.dirname(package_dir), ".env")
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
 
 
 def load_llm_env(env_path: Optional[str] = None) -> Optional[str]:
